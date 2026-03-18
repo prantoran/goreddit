@@ -1,0 +1,5 @@
+- Create module: `go mod init github.com/prantoran/goreddit`
+- Add module requirements and sums: `go mod tidy`
+- Add a package to module: `go get github.com/gorilla/mux`
+- View global packages: `ls ~/go/src`
+- View mod packages: `ls ~/go/pkg/mod`
