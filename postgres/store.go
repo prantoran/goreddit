@@ -4,23 +4,23 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/prantoran/goreddit"
 	_ "github.com/lib/pq" // import postgres driver as side effect
+	"github.com/prantoran/goreddit"
 )
 
 func NewStore(dataSourceName string) (*Store, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
-	}``
+	}
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
 
 	return &Store{
-		ThreadStore:  NewThreadStore(db),
-		PostStore:    NewPostStore(db),
-		CommentStore: NewCommentStore(db),
+		ThreadStore:  &ThreadStore{DB: db},
+		PostStore:    &PostStore{DB: db},
+		CommentStore: &CommentStore{DB: db},
 	}, nil
 }
 
