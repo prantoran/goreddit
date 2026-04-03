@@ -21,6 +21,7 @@ func NewHandler(store goreddit.Store) *Handler {
 		r.Get("/", h.ThreadList())
 		r.Get("/new", h.ThreadCreate())
 		r.Post("/", h.ThreadStore())
+		r.Post("/{id}/delete", h.ThreadDelete())
 	})
 
 	return h
@@ -38,8 +39,14 @@ const threadsListHTML = `
 {{range .Threads}}
 	<dt><strong>{{.Title}}</strong></dt>
 	<dd>{{.Description}}</dd>
+	<dd>
+		<form action="/threads/{{.ID}}/delete" method="POST">
+			<button type="submit">Delete</button>
+		</form>
+	</dd>
 {{end}}
 </dl>
+<a href="/threads/new">Create new thread</a>
 `
 
 func (h *Handler) ThreadList() http.HandlerFunc {
@@ -94,6 +101,24 @@ func (h *Handler) ThreadStore() http.HandlerFunc {
 			Title:       title,
 			Description: description,
 		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/threads", http.StatusFound)
+	}
+}
+
+func (h *Handler) ThreadDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid thread id", http.StatusBadRequest)
+			return
+		}
+
+		if err := h.store.DeleteThread(id); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
