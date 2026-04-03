@@ -1,0 +1,1 @@
+- Running the server: `go run cmd/goreddit/main.go`
