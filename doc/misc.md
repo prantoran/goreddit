@@ -1,1 +1,3 @@
 - Running the server: `go run cmd/goreddit/main.go`
+- Install reflex: `go install github.com/cespare/reflex@latest`
+- Autoreloading: `reflex -s go run cmd/goreddit/main.go`

@@ -2,6 +2,9 @@
 # Declare the targets as phony to avoid conflicts with files of the same name
 # i.e. do not generate files named postgres, adminer, or migrate when the commands are run
 
+run:
+	reflex -s go run cmd/goreddit/main.go
+
 goreddit-net: # default network does not support service/container name resolution
 	docker network inspect goreddit-net \ >/dev/null 2>&1 || docker network create goreddit-net
 
