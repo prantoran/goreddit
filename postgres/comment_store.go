@@ -29,7 +29,7 @@ func (s *CommentStore) CommentsByPost(postId uuid.UUID) ([]goreddit.Comment, err
 }
 
 func (s *CommentStore) CreateComment(c *goreddit.Comment) error {
-	if err := s.Get(c, `INSERT INTO threads VALUES ($1, $2, $3, $4) RETURNING *`,
+	if err := s.Get(c, `INSERT INTO comments VALUES ($1, $2, $3, $4) RETURNING *`,
 		c.ID,
 		c.PostID,
 		c.Content,
