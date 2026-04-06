@@ -16,6 +16,7 @@
 {{else}}
 {{end}}
 ```
+- Inside {{range .Posts}}, `$` in {{$.Thread.ID}} allows to access outside the loop.
 
 ### Nested template
 
