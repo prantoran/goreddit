@@ -30,6 +30,7 @@ func NewHandler(store goreddit.Store) *Handler {
 		r.Get("/{threadID}/{postID}", h.PostShow())
 		r.Post("/{threadID}/{postID}", h.CommentStore())
 	})
+	h.Get("/comments/{id}/vote", h.CommentVote())
 
 	return h
 }
@@ -252,6 +253,38 @@ func (h *Handler) CommentStore() http.HandlerFunc {
 			Content: content,
 			Votes:   0,
 		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, r.Referer(), http.StatusFound)
+	}
+}
+
+func (h *Handler) CommentVote() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid post id", http.StatusBadRequest)
+			return
+		}
+
+		c, err := h.store.Comment(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		dir := r.URL.Query().Get("dir")
+		switch dir {
+		case "up":
+			c.Votes++
+		case "down":
+			c.Votes--
+		}
+
+		if err := h.store.UpdateComment(&c); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
