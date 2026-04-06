@@ -17,11 +17,17 @@ func NewHandler(store goreddit.Store) *Handler {
 	}
 
 	h.Use(middleware.Logger)
+
+	h.Get("/", h.Home())
 	h.Route("/threads", func(r chi.Router) {
 		r.Get("/", h.ThreadList())
 		r.Get("/new", h.ThreadCreate())
 		r.Post("/", h.ThreadStore())
+		r.Get("/{id}", h.ThreadShow())
 		r.Post("/{id}/delete", h.ThreadDelete())
+		r.Get("/{id}/new", h.PostCreate())
+		r.Post("/{id}", h.PostStore())
+		r.Get("/{threadID}/{postID}", h.PostShow())
 	})
 
 	return h
@@ -31,6 +37,13 @@ type Handler struct {
 	*chi.Mux
 
 	store goreddit.Store
+}
+
+func (h *Handler) Home() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
 }
 
 func (h *Handler) ThreadList() http.HandlerFunc {
@@ -53,6 +66,13 @@ func (h *Handler) ThreadList() http.HandlerFunc {
 
 func (h *Handler) ThreadCreate() http.HandlerFunc {
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thread_create.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) ThreadShow() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thread.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, nil)
 	}
@@ -86,6 +106,38 @@ func (h *Handler) ThreadDelete() http.HandlerFunc {
 		}
 
 		if err := h.store.DeleteThread(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/threads", http.StatusFound)
+	}
+}
+
+func (h *Handler) PostCreate() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/post_create.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) PostShow() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/post.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) PostStore() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.FormValue("title")
+		description := r.FormValue("description")
+
+		if err := h.store.CreateThread(&goreddit.Thread{
+			ID:          uuid.New(),
+			Title:       title,
+			Description: description,
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
