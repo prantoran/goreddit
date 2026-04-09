@@ -28,6 +28,7 @@ func NewHandler(store goreddit.Store) *Handler {
 		r.Get("/{id}/new", h.PostCreate())
 		r.Post("/{id}", h.PostStore())
 		r.Get("/{threadID}/{postID}", h.PostShow())
+		r.Get("/{threadID}/{postID}/vote", h.PostVote())
 		r.Post("/{threadID}/{postID}", h.CommentStore())
 	})
 	h.Get("/comments/{id}/vote", h.CommentVote())
@@ -285,6 +286,38 @@ func (h *Handler) CommentVote() http.HandlerFunc {
 		}
 
 		if err := h.store.UpdateComment(&c); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, r.Referer(), http.StatusFound)
+	}
+}
+
+func (h *Handler) PostVote() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "postID")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "invalid post id", http.StatusBadRequest)
+			return
+		}
+
+		p, err := h.store.Post(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		dir := r.URL.Query().Get("dir")
+		switch dir {
+		case "up":
+			p.Votes++
+		case "down":
+			p.Votes--
+		}
+
+		if err := h.store.UpdatePost(&p); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
