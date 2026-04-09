@@ -43,9 +43,18 @@ type Handler struct {
 }
 
 func (h *Handler) Home() http.HandlerFunc {
+	type data struct {
+		Posts []goreddit.Post
+	}
+
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl.Execute(w, nil)
+		pp, errr := h.store.Posts()
+		if errr != nil {
+			http.Error(w, errr.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, data{Posts: pp})
 	}
 }
 

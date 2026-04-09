@@ -15,6 +15,7 @@ type Post struct {
 	Content      string    `db:"content"`
 	Votes        int       `db:"votes"`
 	CommentCount int       `db:"comment_count"`
+	ThreadTitle  string    `db:"thread_title"`
 }
 
 type Comment struct {
@@ -34,6 +35,7 @@ type ThreadStore interface {
 
 type PostStore interface {
 	Post(id uuid.UUID) (Post, error)
+	Posts() ([]Post, error)
 	PostsByThread(threadId uuid.UUID) ([]Post, error)
 	CreatePost(t *Post) error
 	UpdatePost(t *Post) error
