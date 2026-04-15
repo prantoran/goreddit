@@ -103,6 +103,8 @@ func (h *ThreadHandler) Store() http.HandlerFunc {
 			return
 		}
 
+		h.sessions.Put(r.Context(), "flash", "Thread created successfully!")
+
 		http.Redirect(w, r, "/threads", http.StatusFound)
 	}
 }
@@ -120,6 +122,8 @@ func (h *ThreadHandler) Delete() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		h.sessions.Put(r.Context(), "flash", "Thread deleted successfully!")
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
 	}

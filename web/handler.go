@@ -70,7 +70,7 @@ func (h *Handler) Home() http.HandlerFunc {
 		}
 
 		once.Do(func() {
-			h.sessions.Put(r.Context(), "flash", "hello")
+			h.sessions.Put(r.Context(), "flash", "Welcome to my site!")
 		})
 		tmpl.Execute(w, data{
 			SessionData: GetSessionData(h.sessions, r.Context()),

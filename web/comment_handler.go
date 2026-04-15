@@ -35,6 +35,8 @@ func (h *CommentHandler) Store() http.HandlerFunc {
 			return
 		}
 
+		h.sessions.Put(r.Context(), "flash", "Comment created successfully!")
+
 		http.Redirect(w, r, r.Referer(), http.StatusFound)
 	}
 }
