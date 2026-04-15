@@ -6,6 +6,7 @@ type FormErrors map[string]string
 
 func init() { // automatically run when the package is imported
 	gob.Register(CreatePostForm{}) // register the structs for session storage
+	gob.Register(CreateThreadForm{})
 	gob.Register(FormErrors{})
 }
 
@@ -24,6 +25,26 @@ func (f *CreatePostForm) Validate() bool {
 	}
 	if f.Content == "" {
 		f.Errors["Content"] = "Please enter a text."
+	}
+
+	return len(f.Errors) == 0
+}
+
+type CreateThreadForm struct {
+	Title       string `form:"title"`
+	Description string `form:"description"`
+
+	Errors FormErrors
+}
+
+func (f *CreateThreadForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	if f.Title == "" {
+		f.Errors["Title"] = "Please enter a title."
+	}
+	if f.Description == "" {
+		f.Errors["Description"] = "Please enter a description."
 	}
 
 	return len(f.Errors) == 0

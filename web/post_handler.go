@@ -107,6 +107,7 @@ func (h *PostHandler) Store() http.HandlerFunc {
 		if !form.Validate() {
 			h.sessions.Put(r.Context(), "form", form)
 			http.Redirect(w, r, r.Referer(), http.StatusFound)
+			return
 		}
 
 		idStr := chi.URLParam(r, "id")
