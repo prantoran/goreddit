@@ -18,6 +18,7 @@ type ThreadHandler struct {
 
 func (h *ThreadHandler) Show() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF   template.HTML
 		Thread goreddit.Thread
 		Posts  []goreddit.Post
@@ -38,9 +39,10 @@ func (h *ThreadHandler) Show() http.HandlerFunc {
 		}
 		pp, err := h.store.PostsByThread(t.ID)
 		tmpl.Execute(w, data{
-			CSRF:   csrf.TemplateField(r),
-			Thread: t,
-			Posts:  pp,
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
+			Thread:      t,
+			Posts:       pp,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -53,6 +55,7 @@ func (h *ThreadHandler) Show() http.HandlerFunc {
 func (h *ThreadHandler) List() http.HandlerFunc {
 	// Initializations here are done once
 	type data struct {
+		SessionData
 		Threads []goreddit.Thread
 	}
 
@@ -64,19 +67,24 @@ func (h *ThreadHandler) List() http.HandlerFunc {
 			return
 		}
 
-		tmpl.Execute(w, data{Threads: tt})
+		tmpl.Execute(w, data{
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			Threads:     tt,
+		})
 	}
 }
 
 func (h *ThreadHandler) Create() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF template.HTML
 	}
 
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thread_create.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, data{
-			CSRF: csrf.TemplateField(r),
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
 		})
 	}
 }

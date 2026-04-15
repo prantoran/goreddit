@@ -18,6 +18,8 @@ type PostHandler struct {
 
 func (h *PostHandler) Create() http.HandlerFunc {
 	type data struct {
+		SessionData
+
 		CSRF   template.HTML
 		Thread goreddit.Thread
 	}
@@ -35,14 +37,16 @@ func (h *PostHandler) Create() http.HandlerFunc {
 			return
 		}
 		tmpl.Execute(w, data{
-			CSRF:   csrf.TemplateField(r),
-			Thread: t,
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
+			Thread:      t,
 		})
 	}
 }
 
 func (h *PostHandler) Show() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF     template.HTML
 		Thread   goreddit.Thread
 		Post     goreddit.Post
@@ -84,10 +88,11 @@ func (h *PostHandler) Show() http.HandlerFunc {
 		}
 
 		tmpl.Execute(w, data{
-			CSRF:     csrf.TemplateField(r),
-			Thread:   t,
-			Post:     p,
-			Comments: cc,
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
+			Thread:      t,
+			Post:        p,
+			Comments:    cc,
 		})
 	}
 }
