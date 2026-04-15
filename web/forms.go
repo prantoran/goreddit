@@ -1,0 +1,30 @@
+package web
+
+import "encoding/gob"
+
+type FormErrors map[string]string
+
+func init() { // automatically run when the package is imported
+	gob.Register(CreatePostForm{}) // register the structs for session storage
+	gob.Register(FormErrors{})
+}
+
+type CreatePostForm struct {
+	Title   string `form:"title"`
+	Content string `form:"content"`
+
+	Errors FormErrors
+}
+
+func (f *CreatePostForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	if f.Title == "" {
+		f.Errors["Title"] = "Please enter a title."
+	}
+	if f.Content == "" {
+		f.Errors["Content"] = "Please enter a text."
+	}
+
+	return len(f.Errors) == 0
+}
