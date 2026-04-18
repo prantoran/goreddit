@@ -9,6 +9,7 @@ func init() { // automatically run when the package is imported
 	gob.Register(CreateThreadForm{})
 	gob.Register(CreateCommentForm{})
 	gob.Register(FormErrors{})
+	gob.Register(RegisterForm{})
 }
 
 type CreatePostForm struct {
@@ -65,6 +66,32 @@ func (f *CreateCommentForm) Validate() bool {
 	}
 
 	// TODO: check email format using regex
+
+	return len(f.Errors) == 0
+}
+
+type RegisterForm struct {
+	Username      string `form:"username"`
+	Password      string `form:"password"`
+	UsernameTaken bool   `form:"username_taken"`
+
+	Errors FormErrors
+}
+
+func (f *RegisterForm) Validate() bool {
+	f.Errors = FormErrors{}
+
+	if f.Username == "" {
+		f.Errors["Username"] = "Please enter a username."
+	} else if f.UsernameTaken {
+		f.Errors["Username"] = "Username is already taken."
+	}
+
+	if f.Password == "" {
+		f.Errors["Password"] = "Please enter a password."
+	} else if len(f.Password) < 8 {
+		f.Errors["Password"] = "Password must be at least 8 characters long."
+	}
 
 	return len(f.Errors) == 0
 }

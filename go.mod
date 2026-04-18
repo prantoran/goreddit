@@ -15,4 +15,5 @@ require (
 	github.com/alexedwards/scs/v2 v2.9.0 // indirect
 	github.com/gorilla/csrf v1.7.3 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
 )
