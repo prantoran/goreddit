@@ -3,12 +3,18 @@ package web
 import (
 	"context"
 	"database/sql"
+	"encoding/gob"
 
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/google/uuid"
 
 	_ "github.com/lib/pq"
 )
+
+func init() {
+	gob.Register(uuid.UUID{})
+}
 
 func NewSessionHandler(dataSourceName string) (*scs.SessionManager, error) {
 	db, err := sql.Open("postgres", dataSourceName)
