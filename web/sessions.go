@@ -8,6 +8,7 @@ import (
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/google/uuid"
+	"github.com/prantoran/goreddit"
 
 	_ "github.com/lib/pq"
 )
@@ -15,6 +16,12 @@ import (
 func init() {
 	gob.Register(uuid.UUID{})
 }
+
+type SessionKey string
+
+const (
+	SessionKeyUserID = "userID"
+)
 
 func NewSessionHandler(dataSourceName string) (*scs.SessionManager, error) {
 	db, err := sql.Open("postgres", dataSourceName)
@@ -31,13 +38,14 @@ func NewSessionHandler(dataSourceName string) (*scs.SessionManager, error) {
 type SessionData struct {
 	FlashMessage string
 	Form         interface{}
-	// UserID       uuid.UUID
+	User         goreddit.User
+	LoggedIn     bool
 }
 
 func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionData {
 	var data SessionData
 	data.FlashMessage = session.PopString(ctx, "flash")
-	// data.UserID = session.Get(ctx, "user_id").(uuid.UUID)
+	data.User, data.LoggedIn = ctx.Value("user").(goreddit.User)
 
 	data.Form = session.Pop(ctx, "form")
 	if data.Form == nil {

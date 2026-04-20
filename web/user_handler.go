@@ -102,7 +102,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 			return
 		}
 
-		h.sessions.Put(r.Context(), "userID", user.ID)
+		h.sessions.Put(r.Context(), SessionKeyUserID, user.ID)
 		h.sessions.Put(r.Context(), "flash", "Logged in successfully.")
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
@@ -110,7 +110,7 @@ func (h *UserHandler) LoginSubmit() http.HandlerFunc {
 
 func (h *UserHandler) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		h.sessions.Remove(r.Context(), "userID")
+		h.sessions.Remove(r.Context(), SessionKeyUserID)
 		h.sessions.Put(r.Context(), "flash", "Logged out successfully.")
 		http.Redirect(w, r, "/", http.StatusFound)
 	}

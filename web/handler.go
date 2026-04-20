@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"html/template"
 	"net/http"
 	"sync"
@@ -8,6 +9,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/prantoran/goreddit"
 )
@@ -27,6 +29,7 @@ func NewHandler(store goreddit.Store, sessions *scs.SessionManager, csrfKey []by
 	h.Use(middleware.Logger)
 	h.Use(csrf.Protect(csrfKey, csrf.Secure(false), csrf.TrustedOrigins([]string{"localhost:3000"})))
 	h.Use(sessions.LoadAndSave)
+	h.Use(h.withUser)
 
 	h.Get("/", h.Home())
 	h.Route("/threads", func(r chi.Router) {
@@ -83,4 +86,19 @@ func (h *Handler) Home() http.HandlerFunc {
 			Posts:       pp,
 		})
 	}
+}
+
+func (h *Handler) withUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, _ := h.sessions.Get(r.Context(), SessionKeyUserID).(uuid.UUID)
+
+		user, err := h.store.User(id)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user", user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
